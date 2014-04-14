@@ -177,7 +177,7 @@
   }
 
   var DEPTH = 3;
-  var LOST = -Number.MAX_VALUE;
+  var LOST = -Number.MAX_SAFE_INTEGER;
 
   var PRIOR = [
     [12,13,14,15],
@@ -196,6 +196,14 @@
       for (var y = 0; y < SIZE; ++y) {
         callback(cells[x][y], x, y);
       }
+    }
+  }
+
+  function priorOrderVisit(cells, callback) {
+    for (var i = ARR_PR.length - 1; i >= 0; --i) {
+      var p = ARR_PR[i];
+      if (callback(cells[p.x][p.y], p.x, p.y) === false)
+        return;
     }
   }
 
@@ -245,15 +253,15 @@
 
   function abGuess(cells) {
     // dynamically adjust depth
-    if (getAvailable(nCells).length <= 4)
-      DEPTH = 5;
+  /*    if (getAvailable(cells).length < 4)
+      DEPTH = 4;
     else 
       DEPTH = 3;
-
+*/
     function guessHelper(cells, depth) {
       if (depth == DEPTH)
         return [-1, getScore(cells)];
-      var maxScore = LOST;
+      var maxScore = -Number.MAX_VALUE;
       var bestDir = -1;
 
       // check for rules first
@@ -325,14 +333,18 @@
   }
 
   function ruleBasedGuess(cells) {
-    var ret = -1;
+    var NORULES = -1;
+
     var avail = getAvailable(cells);
     if (avail.length == 0) {
-      return -1;
+      return NORULES;
     }
+
     avail.sort(function (a, b) {
       return PRIOR[b.x][b.y] - PRIOR[a.x][a.y];
     });
+
+    // for level one 
     var x = avail[0].x;
     if (x === 0) {
       // if going down can fill the blank, go down
@@ -344,7 +356,51 @@
         return LEFT;
       }
     }
-    return ret;
+    // prevent the left bottom becomes a weakness
+    var nCells = getNextCells(cells, DOWN);
+    if (!cellsEqual(nCells, cells) && nCells[0][0] == null)
+      return DOWN;
+
+    // for level two
+    // last is the first one that's smaller than it's next in priority
+    var p = null;
+    var last = null;
+    priorOrderVisit(cells, function(val, x, y) {
+      if (val == null)
+        val = 1;
+      if (last != null && val > last.val) {
+        p = {x: x, y: y, val: val};
+        return false;
+      }
+      last = {x: x, y: y, val: val};
+    });
+
+    // if can merge the highest priority, do it
+    if (p && last && p.val === last.val && last.val !== 1) {
+      if (p.x > last.x) {
+        return LEFT;
+      }
+      else { // p.x === last.x
+        if (p.y > last.y)
+          return UP;
+        if (p.y < last.y)
+          return DOWN;
+      }
+    }
+
+    if (last.x === 1) {
+      // if go left can merge, go left
+      if (cells[last.x + 1][last.y] === last.val)
+        return LEFT;
+      // if it's an emptyness, that go left can fill, go left
+      if (last.val === 1 && canMakeMove(cells, LEFT))
+        return LEFT;
+      // if it's dangerous to go down, go up!
+      nCells = getNextCells(cells, UP);
+      if (!cellsEqual(nCells, cells) && nCells[1][3] == null)
+        return UP;
+    }
+    return NORULES;
   }
 
   function getBestGuess(cells) {
