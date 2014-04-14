@@ -177,7 +177,7 @@
   }
 
   var DEPTH = 3;
-  var LOST = -1000000000;
+  var LOST = -Number.MAX_VALUE;
 
   var PRIOR = [
     [12,13,14,15],
@@ -220,7 +220,7 @@
     // available + point
     score += 16 << avail;
     // out of order panelty
-    for (var i = SIZE * SIZE - 1; i >= 0; --pos) {
+    for (var i = SIZE * SIZE - 1; i >= 0; --i) {
       var p = ARR_PR[i];
       var val = cells[p.x][p.y];
       if (val == null)
@@ -230,7 +230,7 @@
         arrPs.push({x: p.x + 1, y: p.y});
       }
       if (i > 0) {
-        arrPs.push(ARR_PR[i + i]);
+        arrPs.push(ARR_PR[i - i]);
       }
       arrPs.forEach(function(nP) {
         var nVal = cells[nP.x][nP.y];
@@ -292,13 +292,13 @@
             }
           }
         }
-        console.assert(minScore != Number.MAX_VALUE);
+        if (minScore == Number.MAX_VALUE) debugger;
         if (minScore > maxScore) {
           maxScore = minScore;
           bestDir = dir;
         }
       });
-      console.assert(bestDir != -1);
+      if (bestDir == -1) debugger;
       return [bestDir, maxScore];
     }
     var ret = guessHelper(cells, 0)
@@ -311,11 +311,7 @@
   }
 
   function getBestGuess(cells) {
-    if (getAvailable(cells).length > 10) {
-
-    } else {
-      return abGuess(cells)
-    }
+    return abGuess(cells)
   }
 //////////////////
 // main loop
