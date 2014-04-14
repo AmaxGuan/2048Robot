@@ -176,7 +176,7 @@
     return !cellsEqual(getNextCells(cells, dir), cells);
   }
 
-  var DEPTH = 4;
+  var DEPTH = 3;
   var LOST = -Number.MAX_VALUE;
 
   var PRIOR = [
@@ -218,7 +218,7 @@
     });
 
     // available + point
-    score += 16 << avail;
+    score += 1024 << avail;
     // out of order panelty
     for (var i = SIZE * SIZE - 1; i >= 0; --i) {
       var p = ARR_PR[i];
@@ -244,6 +244,12 @@
   }
 
   function abGuess(cells) {
+    // dynamically adjust depth
+    if (getAvailable(nCells).length <= 4)
+      DEPTH = 5;
+    else 
+      DEPTH = 3;
+
     function guessHelper(cells, depth) {
       if (depth == DEPTH)
         return [-1, getScore(cells)];
