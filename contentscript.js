@@ -176,7 +176,7 @@
     return !cellsEqual(getNextCells(cells, dir), cells);
   }
 
-  var DEPTH = 3;
+  var DEPTH = 4;
   var LOST = -Number.MAX_VALUE;
 
   var PRIOR = [
@@ -236,7 +236,7 @@
         var nVal = cells[nP.x][nP.y];
         if (nVal == null) nVal = 1;
         if (nVal > val) {
-          score -= (nVal * nVal / val) << (i); 
+          score -= (nVal / val) << (i); 
         }
       });
     }
@@ -249,7 +249,19 @@
         return [-1, getScore(cells)];
       var maxScore = LOST;
       var bestDir = -1;
-      [LEFT, DOWN, UP, RIGHT].forEach(function(dir) {
+
+      // check for rules first
+      var possibleMoves;
+      var ruleMove = ruleBasedGuess(cells)
+      if (ruleMove != -1)
+        possibleMoves = [ruleMove];
+      else
+        possibleMoves = [LEFT, DOWN, UP, RIGHT];
+
+      possibleMoves.forEach(function(dir) {
+        // if possible, never use RIGHT!
+        if (dir == RIGHT && bestDir != -1)
+          return;
         var nCells = getNextCells(cells, dir);
         if (cellsEqual(nCells, cells))
           return;
@@ -306,11 +318,33 @@
     return ret[0];
   }
 
-  function simpleGuess(cells) {
-
+  function ruleBasedGuess(cells) {
+    var ret = -1;
+    var avail = getAvailable(cells);
+    if (avail.length == 0) {
+      return -1;
+    }
+    avail.sort(function (a, b) {
+      return PRIOR[b.x][b.y] - PRIOR[a.x][a.y];
+    });
+    var x = avail[0].x;
+    if (x === 0) {
+      // if going down can fill the blank, go down
+      for (var y = avail[0].y - 1; y >= 0; --y) {
+        if (tileOccupied(cells, x, y))
+          return DOWN;
+      }
+      if (canMakeMove(cells, LEFT)) {
+        return LEFT;
+      }
+    }
+    return ret;
   }
 
   function getBestGuess(cells) {
+    var res = ruleBasedGuess(cells);
+    if (res != -1)
+      return res;
     return abGuess(cells)
   }
 //////////////////
