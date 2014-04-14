@@ -186,6 +186,11 @@
     [ 3, 2, 1, 0]
   ];
 
+  var ARR_PR = new Array(SIZE * SIZE);
+  visitCells(PRIOR, function(val, x, y){
+    ARR_PR[val] = {x: x, y: y};
+  })
+
   function visitCells(cells, callback) {
     for (var x = 0; x < SIZE; ++x) {
       for (var y = 0; y < SIZE; ++y) {
@@ -211,11 +216,34 @@
     visitCells(cells, function(val, x, y) {
       score +=  val << (PRIOR[x][y]);
     });
-    score += 1024 << avail;
+
+    // available + point
+    score += 16 << avail;
+    // out of order panelty
+    for (var i = SIZE * SIZE - 1; i >= 0; --pos) {
+      var p = ARR_PR[i];
+      var val = cells[p.x][p.y];
+      if (val == null)
+        val = 1;
+      var arrPs = [];
+      if (p.x < 3) {
+        arrPs.push({x: p.x + 1, y: p.y});
+      }
+      if (i > 0) {
+        arrPs.push(ARR_PR[i + i]);
+      }
+      arrPs.forEach(function(nP) {
+        var nVal = cells[nP.x][nP.y];
+        if (nVal == null) nVal = 1;
+        if (nVal > val) {
+          score -= (nVal * nVal / val) << (i); 
+        }
+      });
+    }
     return score;
   }
 
-  function getBestGuess(cells) {
+  function abGuess(cells) {
     function guessHelper(cells, depth) {
       if (depth == DEPTH)
         return [-1, getScore(cells)];
@@ -231,13 +259,17 @@
         if (avail.length > 6) {
           // do random move, if to many available, take the most priority one
           var sel = null;
-          var maxPrior = -1
+          var maxPrior = -1;
+          //make random selection
+          // sel = avail[Math.floor(Math.random() * avail.length)];
+          //make selection with most priority
           avail.forEach(function(pos) {
             if (PRIOR[pos.x][pos.y] > maxPrior) {
               maxPrior = PRIOR[pos.x][pos.y];
               sel = pos;
             }
           });
+
           [2, 4].forEach(function(val) {
             nCells[sel.x][sel.y] = val;
             var score = guessHelper(nCells, depth + 1)[1];
@@ -274,7 +306,17 @@
     return ret[0];
   }
 
+  function simpleGuess(cells) {
 
+  }
+
+  function getBestGuess(cells) {
+    if (getAvailable(cells).length > 10) {
+
+    } else {
+      return abGuess(cells)
+    }
+  }
 //////////////////
 // main loop
   var GUESSING = false;
