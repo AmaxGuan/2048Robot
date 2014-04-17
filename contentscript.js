@@ -310,6 +310,9 @@
                 if (!tileOccupied(cells, x, y)) {
                   nCells[x][y] = val;
                   var score = guessHelper(nCells, depth + 1)[1];
+                  // human intervene, if the dir is right, minus point!
+                  if (dir === RIGHT)
+                    score /= 2;
                   nCells[x][y] = null;
                   if (score < minScore) 
                     minScore = score;
@@ -347,6 +350,10 @@
     // for level one 
     var x = avail[0].x;
     if (x === 0) {
+      // test if just go to right
+      var justRight = cells[SIZE - 1].every(function(val) {return val != null;})
+      if (justRight && canMakeMove(cells, LEFT))
+        return LEFT;
       // if going down can fill the blank, go down
       for (var y = avail[0].y - 1; y >= 0; --y) {
         if (tileOccupied(cells, x, y))
@@ -412,19 +419,25 @@
 //////////////////
 // main loop
   var GUESSING = false;
+  var AUTORESTART = true;
   var INTERVAL = 200;
   function mainLoop() {
     if (GUESSING == false)
       return;
     if (document.querySelector(".game-over") != null && 
         window.getComputedStyle(document.querySelector(".game-over")).display === "block") {
+      if (AUTORESTART) {
+        document.querySelector(".retry-button").click();
+        setTimeout(mainLoop, INTERVAL);
+        return;
+      }
       GUESSING = false;
       return;
     }
     var cells = readBoard();
     var dir = getBestGuess(cells);
     makeMove(dir);
-    setTimeout(mainLoop, 200);
+    setTimeout(mainLoop, INTERVAL);
   }
 
   function startGuess() {
