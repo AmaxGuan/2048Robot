@@ -7,11 +7,7 @@
 
 /** unif_random */
 /* unif_random is defined as a random number generator returning a value in [0..n-1]. */
-#if defined(HAVE_ARC4RANDOM_UNIFORM)
-static inline unsigned unif_random(unsigned n) {
-    return arc4random_uniform(n);
-}
-#elif defined(HAVE_DRAND48)
+#if defined(HAVE_DRAND48)
 // Warning: This is a slightly biased RNG.
 #include <unistd.h>
 #include <fcntl.h>

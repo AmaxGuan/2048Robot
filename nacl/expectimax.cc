@@ -37,13 +37,13 @@
 /// To communicate with the browser, you must override HandleMessage() to
 /// receive messages from the browser, and use PostMessage() to send messages
 /// back to the browser.  Note that this interface is asynchronous.
-class HelloTutorialInstance : public pp::Instance {
+class ExpectimaxInstance : public pp::Instance {
  public:
   /// The constructor creates the plugin-side instance.
   /// @param[in] instance the handle to the browser-side plugin instance.
-  explicit HelloTutorialInstance(PP_Instance instance) : pp::Instance(instance)
+  explicit ExpectimaxInstance(PP_Instance instance) : pp::Instance(instance)
   {}
-  virtual ~HelloTutorialInstance() {}
+  virtual ~ExpectimaxInstance() {}
 
   /// Handler for messages coming in from the browser via postMessage().  The
   /// @a var_message can contain be any pp:Var type; for example int, string
@@ -57,16 +57,16 @@ class HelloTutorialInstance : public pp::Instance {
 /// The Module class.  The browser calls the CreateInstance() method to create
 /// an instance of your NaCl module on the web page.  The browser creates a new
 /// instance for each <embed> tag with type="application/x-pnacl".
-class HelloTutorialModule : public pp::Module {
+class ExpectimaxModule : public pp::Module {
  public:
-  HelloTutorialModule() : pp::Module() {}
-  virtual ~HelloTutorialModule() {}
+  ExpectimaxModule() : pp::Module() {}
+  virtual ~ExpectimaxModule() {}
 
-  /// Create and return a HelloTutorialInstance object.
+  /// Create and return a ExpectimaxInstance object.
   /// @param[in] instance The browser-side instance.
   /// @return the plugin-side instance.
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new HelloTutorialInstance(instance);
+    return new ExpectimaxInstance(instance);
   }
 };
 
@@ -77,7 +77,7 @@ namespace pp {
 /// is one instance per <embed> tag on the page.  This is the main binding
 /// point for your NaCl module with the browser.
 Module* CreateModule() {
-  return new HelloTutorialModule();
+  return new ExpectimaxModule();
 }
 }  // namespace pp
 
