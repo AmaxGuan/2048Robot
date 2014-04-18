@@ -479,6 +479,20 @@
     if (move == null) {
       chrome.runtime.sendMessage({type:"getMove", board: readBoard()})
     } else {
+      var next = getNextCells(cells, move);
+      var avails = getAvailable(next);
+      // stop if this is the last move you can make
+      if (avails.size() < 1)
+        return;
+      if (avails.size() == 1) {
+        var p = avails[0];
+        if (!((x > 0 && next[p.x - 1][p.y] <= 4) &&
+            (x < SIZE - 1 && next[p.x + 1][p.y] <=4) ||
+            (y > 0 && next[p.x][p.y + 1] <= 4) ||
+            (y < SIZE - 1 && next[p.x][p.y + 1] <= 4))) {
+          return;
+        }
+      } 
       makeMove(move);
       setTimeout(function() {mainLoopNacl()}, 100);
     }
