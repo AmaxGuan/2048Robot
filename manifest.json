@@ -12,8 +12,7 @@
     "128" : "sample-128.png"
   },
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "page": "background.html"
   },
   "browser_action": {
     "default_title": "Play the 2048 game!"

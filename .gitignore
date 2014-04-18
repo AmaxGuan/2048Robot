@@ -1,0 +1,5 @@
+*.bc
+*.pexe
+*.nmf
+*.nexe
+nacl/newlib

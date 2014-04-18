@@ -1,0 +1,5 @@
+nacl-manifest ./expectimax.nmf
+nacl-irt ./expectimax_x86_32.nexe 
+target remote localhost:4014
+
+break expectimax.cc:97

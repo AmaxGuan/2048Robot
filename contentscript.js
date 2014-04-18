@@ -419,8 +419,9 @@
 //////////////////
 // main loop
   var GUESSING = false;
-  var AUTORESTART = true;
+  var AUTORESTART = false;
   var INTERVAL = 200;
+  var USINGNACL = true
   function mainLoop() {
     if (GUESSING == false)
       return;
@@ -442,7 +443,10 @@
 
   function startGuess() {
     GUESSING = true;
-    mainLoop();
+    if (USINGNACL)
+      mainLoopNacl();
+    else
+      mainLoop();
   }
 
   function stopGuess() {
@@ -456,6 +460,33 @@
       startGuess();
     }
   }
+///////////////////
+// nacl handling
+
+  function mainLoopNacl(move) {
+    if (GUESSING == false)
+      return;
+    if (document.querySelector(".game-over") != null && 
+        window.getComputedStyle(document.querySelector(".game-over")).display === "block") {
+      if (AUTORESTART) {
+        document.querySelector(".retry-button").click();
+        setTimeout(mainLoopNacl, INTERVAL);
+        return;
+      }
+      GUESSING = false;
+      return;
+    }
+    if (move == null) {
+      chrome.runtime.sendMessage({type:"getMove", board: readBoard()})
+    } else {
+      makeMove(move);
+      setTimeout(function() {mainLoopNacl()}, 100);
+    }
+  }
+
+
+
+
 //////////////////
 //unit test funcs
   function unitTests() {
@@ -486,9 +517,13 @@
 
   // execute
   chrome.runtime.onMessage.addListener(function (message) {
-    if (message == "play") {
+    if (message.type == "play") {
       // unitTests();
       swtichGuess();
+    }
+    else if (message.type == "move") {
+      makeMove(message.dir);
+      setTimeout(function() {mainLoopNacl();}, 100);
     }
   });
 }());

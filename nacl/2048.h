@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <stdlib.h>
 #include "platdefs.h"
 
@@ -22,12 +23,12 @@ static inline void print_board(board_t board) {
     int i,j;
     for(i=0; i<4; i++) {
         for(j=0; j<4; j++) {
-            printf("%c", "0123456789abcdef"[(board)&0xf]);
+            fprintf(stdout, "%c", "0123456789abcdef"[(board)&0xf]);
             board >>= 4;
         }
-        printf("\n");
+        fprintf(stdout, "\n");
     }
-    printf("\n");
+    fprintf(stdout, "\n");
 }
 
 static inline board_t unpack_col(row_t row) {
